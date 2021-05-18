@@ -147,14 +147,14 @@ int main(void)
 		
     /* USER CODE BEGIN 3 */
 		mpxv_volt = adc_raw[0] / 4095.0 * 3300;
-		pressure = (mpxv_volt - 1700) / 1650 * 2000;
+		pressure = fabs(mpxv_volt - 1747) / 1650 * 2000;
 		if(pressure >= 100){
 			if(is_start == 0){
 				is_start = 1;
 				DWT->CYCCNT = 0;
 				timer = get_millis();
 			}
-			tmp = 0.0025 * sqrt(2 * pressure / 845.64);
+			tmp = 3.1415  * 0.019 * 0.019 / 4.0 * sqrt(2 * pressure / 0.7390) - 0.0012;
 			sum += tmp;
 			count++;
 		}

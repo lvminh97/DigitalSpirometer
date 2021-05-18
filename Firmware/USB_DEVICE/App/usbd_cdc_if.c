@@ -95,7 +95,11 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-
+uint32_t time;
+char ReceivedData[100] = {0};
+uint8_t Rxcount = 0;
+uint32_t dataSize = 0;
+uint8_t check = 0;
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
