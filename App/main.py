@@ -18,6 +18,7 @@ class App(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.connected = False
         self.port = ""
         self.serial = None
         self.baudrate = 0
@@ -38,8 +39,8 @@ class App(QWidget):
         self.portList = QComboBox(self)
         self.portList.resize(80, 25)
         self.portList.move(100, 20)
-        self.portList.addItem("COM1")
-        self.portList.addItem("COM2")
+        # self.portList.addItem("COM1")
+        # self.portList.addItem("COM2")
         self.scanPort()
 
         self.connectBtn = QPushButton("Kết nối", self)
@@ -72,16 +73,24 @@ class App(QWidget):
                 pass
 
     def connectPort(self):
-        self.port = self.portList.currentText()
-        try:
-            self.serial = Serial(self.port, self.baudrate, timeout = 2)
-        except SerialException:
-            msgBox = QMessageBox(self)
-            msgBox.setIcon(QMessageBox.Information)
-            msgBox.setText("Không thể kết nối tới cổng " + self.port + "!!")
-            msgBox.setWindowTitle("Error")
-            msgBox.setStandardButtons(QMessageBox.Ok)
-            msgBox.show()
+        if not self.connected:
+            self.port = self.portList.currentText()
+            try:
+                self.serial = Serial(self.port, self.baudrate, timeout = 2)
+                self.connected = True
+                self.connectBtn.setText("Ngắt kết nối")
+            except SerialException:
+                msgBox = QMessageBox(self)
+                msgBox.setIcon(QMessageBox.Information)
+                msgBox.setText("Không thể kết nối tới cổng " + self.port + "!!")
+                msgBox.setWindowTitle("Error")
+                msgBox.setStandardButtons(QMessageBox.Ok)
+                msgBox.show()
+        else:
+            self.serial = None
+            self.connected = False
+            self.connectBtn.setText("Kết nối")
+
 
     def handleData(self):
         pass
