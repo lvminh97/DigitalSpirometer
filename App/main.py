@@ -9,11 +9,18 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QFileDialog, QFrame,
 import os
 import sys
 import warnings
+
+import serial
 from PlotCanvas import PlotCanvas
+from serial import Serial, SerialException
 
 class App(QWidget):
     def __init__(self):
         super().__init__()
+
+        self.port = ""
+        self.serial = None
+        self.baudrate = 0
         self.data = {}
 
         self.initUI()
@@ -31,8 +38,9 @@ class App(QWidget):
         self.portList = QComboBox(self)
         self.portList.resize(80, 25)
         self.portList.move(100, 20)
-        self.portList.addItem("COM 1")
-        self.portList.addItem("COM 2")
+        self.portList.addItem("COM1")
+        self.portList.addItem("COM2")
+        self.scanPort()
 
         self.connectBtn = QPushButton("Kết nối", self)
         self.connectBtn.resize(100, 28)
@@ -41,9 +49,9 @@ class App(QWidget):
 
         self.graphView = PlotCanvas(self, width = 7, height = 4.5)
         self.graphView.move(320, 80)
-        self.graphView.plot(list(range(400, 701, 10)), [1] + [0] * 30, 'w')
+        # self.graphView.plot(list(range(400, 701, 10)), [1] + [0] * 30, 'w')
 
-        self.resultBox = QGroupBox('Tỷ lệ pha màu', self)
+        self.resultBox = QGroupBox('Đánh giá tình trạng sức khỏe', self)
         self.resultBox.resize(270, 250)
         self.resultBox.move(20, 80)
         # self.ratioText = QLabel(self)
@@ -53,8 +61,27 @@ class App(QWidget):
 
         self.show()
 
+    def scanPort(self):
+        for i in range(256):
+            port = "COM" + str(i + 1)
+            try:
+                s = Serial(port)
+                s.close()
+                self.portList.addItem(port)
+            except (OSError, SerialException):
+                pass
+
     def connectPort(self):
-        pass
+        self.port = self.portList.currentText()
+        try:
+            self.serial = Serial(self.port, self.baudrate, timeout = 2)
+        except SerialException:
+            msgBox = QMessageBox(self)
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText("Không thể kết nối tới cổng " + self.port + "!!")
+            msgBox.setWindowTitle("Error")
+            msgBox.setStandardButtons(QMessageBox.Ok)
+            msgBox.show()
 
     def handleData(self):
         pass
