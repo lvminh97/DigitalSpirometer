@@ -9,10 +9,10 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QFileDialog, QFrame,
 import os
 import sys
 import warnings
-
-import serial
 from PlotCanvas import PlotCanvas
 from serial import Serial, SerialException
+import threading
+import time
 
 class App(QWidget):
     def __init__(self):
@@ -22,6 +22,7 @@ class App(QWidget):
         self.port = ""
         self.serial = None
         self.baudrate = 0
+        self.buffer = ""
         self.data = {}
 
         self.initUI()
@@ -77,30 +78,50 @@ class App(QWidget):
             self.port = self.portList.currentText()
             try:
                 self.serial = Serial(self.port, self.baudrate, timeout = 2)
-                self.connected = True
-                self.connectBtn.setText("Ngắt kết nối")
+                # Send detecting command to detect whether is connected with spirometer
+                self.serial.write("{cmd:detect}\n".encode())
+                # Wait the response from spirometer
+                resp = self.serial.readline().decode()
+                if resp.find("{dev:spirometer}") != -1: # right response
+                    self.connected = True
+                    self.connectBtn.setText("Ngắt kết nối")
+                else:
+                    self.dispMessageBox("Error", "Chưa kết nối đúng thiết bị. Vui lòng kiểm tra lại!")
             except SerialException:
-                msgBox = QMessageBox(self)
-                msgBox.setIcon(QMessageBox.Information)
-                msgBox.setText("Không thể kết nối tới cổng " + self.port + "!!")
-                msgBox.setWindowTitle("Error")
-                msgBox.setStandardButtons(QMessageBox.Ok)
-                msgBox.show()
+                self.dispMessageBox("Error", "Không thể kết nối tới cổng " + self.port + "!!")
         else:
-            self.serial = None
-            self.connected = False
-            self.connectBtn.setText("Kết nối")
+            self.disconnect()
 
+    def disconnect(self):
+        if self.serial is None:
+            pass
+        else:
+            self.serial.close()
+            self.serial = None 
+        self.connected = False 
+        self.connectBtn.setText("Kết nối")
 
     def handleData(self):
-        pass
+        while True:
+            if self.connected:
+                c = self.serial.read(1).decode()
+                self.buffer += c
+
+    def dispMessageBox(self, title, text):
+        msgBox = QMessageBox(self)
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setText(text)
+        msgBox.setWindowTitle(title)
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.show()
 
     def setColorBox(self, box, RGB): ## box = 0 -> sampleColor; box = 1 -> computeColor
-        styleSheet = 'border: 1px solid #a9a8b3; background-color: #' + '%02x%02x%02x' % (RGB[0], RGB[1], RGB[2])   
-        if box == 0:
-            self.sampleColorBox.setStyleSheet(styleSheet)
-        else:
-            self.computeColorBox.setStyleSheet(styleSheet)     
+        # styleSheet = 'border: 1px solid #a9a8b3; background-color: #' + '%02x%02x%02x' % (RGB[0], RGB[1], RGB[2])   
+        # if box == 0:
+        #     self.sampleColorBox.setStyleSheet(styleSheet)
+        # else:
+        #     self.computeColorBox.setStyleSheet(styleSheet) 
+        pass    
 
 if __name__ == '__main__':
     os.system("color 0a")
@@ -108,4 +129,8 @@ if __name__ == '__main__':
     warnings.filterwarnings('ignore') 
     app = QApplication(sys.argv)
     exe = App()
+    # Child-thread for receiving data from port
+    thread = threading.Thread(target = exe.handleData)
+    thread.start()
+    #Run app
     sys.exit(app.exec_())
