@@ -26,6 +26,7 @@
 #include "stdio.h"
 #include "math.h"
 #include "lcd1602.h"
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,13 +49,14 @@ DMA_HandleTypeDef hdma_adc1;
 
 /* USER CODE BEGIN PV */
 uint16_t adc_raw[5];
-double mpxv_volt;
-double pressure;
+double mpxv_volt, pressure, sum = 0, tmp;
 char tmpString[25];
-uint32_t timer = 0;
+uint32_t timer = 0, count = 0;
 uint8_t is_start = 0, is_finish = 0, _1sec_complete = 0, _6sec_complete = 0;
-uint32_t count = 0;
-double sum = 0, tmp;
+
+char TxData[100], RxData[100] = {0};
+uint8_t Rxcount = 0;
+uint32_t datasize = 0;
 
 /* USER CODE END PV */
 
@@ -89,6 +91,22 @@ uint32_t get_micros(){
 uint32_t get_millis(){
 	return DWT->CYCCNT / (SystemCoreClock / 1000);
 }
+int32_t indexOf(char *s, char *t){
+	for(int i = 0; i < strlen(s); i++){
+		if(s[i] == t[0]){
+			uint8_t flag = 1;
+			for(int j = 1; j < strlen(t); j++){
+				if(s[i + j] != t[j]){
+					flag = 0;
+					break;
+				}
+			}
+			if(flag) return i;
+		}
+	}
+	return -1;
+}
+
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
@@ -131,7 +149,7 @@ int main(void)
 	LCD_Init();
 	LCD_PutString("N.A. Tuan");
 	LCD_Gotoxy(0, 1);
-	LCD_PutString("Do an 3");
+	LCD_PutString("Do an TN");
 	HAL_Delay(2000);
 	LCD_Clear();
 	LCD_PutString("FEV1: ");
@@ -146,15 +164,16 @@ int main(void)
     /* USER CODE END WHILE */
 		
     /* USER CODE BEGIN 3 */
-		mpxv_volt = adc_raw[0] / 4095.0 * 3300;
-		pressure = fabs(mpxv_volt - 1747) / 1650 * 2000;
-		if(pressure >= 100){
+		tmp = 0;
+		mpxv_volt = adc_raw[0] / 4095.0 * 3300; // convert adc value into voltage (range 3300mV)
+		pressure = fabs(mpxv_volt - 1747) / 1650 * 2000;  // conpute pressure between 2 pipe of sensor
+		if(pressure >= 100){  
 			if(is_start == 0){
 				is_start = 1;
 				DWT->CYCCNT = 0;
 				timer = get_millis();
 			}
-			tmp = 3.1415  * 0.019 * 0.019 / 4.0 * sqrt(2 * pressure / 0.7390) - 0.0012;
+			tmp = 3.1415  * 0.019 * 0.019 / 4.0 * sqrt(2 * pressure / 1.2022); // compute the flow rate follow Bernouli equation
 			sum += tmp;
 			count++;
 		}
@@ -174,7 +193,19 @@ int main(void)
 			is_start = 0;
 			HAL_Delay(2000);
 		}
-		HAL_Delay(10);
+		// process the command received from app
+		if(indexOf((char *) RxData, "{cmd:detect}") != -1){
+			CDC_Transmit_FS((uint8_t*) "{dev:spirometer}\n", 17);
+			Rxcount = 0;
+			RxData[0] = 0;
+		}
+		else if(indexOf((char*) RxData, "{cmd:getdata}") != -1){
+			sprintf(TxData, "{data:%d}\n", (int) (tmp * 1000));
+			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
+			Rxcount = 0;
+			RxData[0] = 0;
+		}
+		HAL_Delay(5);
   }
   /* USER CODE END 3 */
 }
