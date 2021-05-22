@@ -24,11 +24,15 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 	private HashMap<String, CommPortIdentifier> portList;  // map port's name with port instance
 	private CommPortIdentifier selectedPortIdentifier = null; // opened port
 	private SerialPort serialPort = null; 
+	
 	private InputStream inputStream = null; // input stream that serve transmit and receive through Serial port
 	private OutputStream outputStream = null; // output stream that serve transmit and receive through Serial port
-	private boolean isConnect = false;
-	final static int TIMEOUT = 2000;
 	private String buff = "";
+	
+	private boolean isConnect = false;
+	private boolean isDetect = false;
+	
+	private int TIMEOUT = 2000;
 	
 	public Controller() {
 		this.view = new View();
@@ -62,7 +66,7 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		try{
 			commPort = this.selectedPortIdentifier.open("{cmd:detect}\n", TIMEOUT);
 			this.serialPort = (SerialPort) commPort;
-			this.serialPort.setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+			this.serialPort.setSerialPortParams(115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 			this.isConnect = true;
 			this.view.getConnectBtn().setText("Ngắt kết nối");
 //			System.out.println(selectedPort + " opened successfully!!!");
@@ -88,6 +92,7 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 			this.outputStream = null;
 			this.view.getConnectBtn().setText("Kết nối");
 			this.isConnect = false;
+			this.isDetect = false;
 //			System.out.println("Disconnected!");
 		}
 		catch(Exception e){
@@ -136,8 +141,13 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 				String text = new String(new byte[] {data});
 				if(text.equals("\r") || text.equals("\n")){
 					if(buff.length() > 0){
-//						process(buff);
-						System.out.println(buff);
+						int resp = Utils.processBuff(buff);
+						if(resp == 1){
+							this.isDetect = true;
+						}
+						else if(resp == 2 && this.isDetect){
+							System.out.println("Data: " + buff);
+						}
 						buff = "";
 					}
 				}

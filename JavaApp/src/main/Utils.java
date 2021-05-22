@@ -25,21 +25,19 @@ public class Utils {
 		try{
 			out.flush();
 			out.write(b);
-//			for(int i = 0; i < b.length; i++){
-//				out.write(b[i]);	
-//			}
 		}
 		catch(Exception e){
 			System.out.println("Failed to write data. (" + e.toString() + ")");
 		}
 	}
 	
-	public static void sendInt(OutputStream out, int a) {
-		try{
-			out.write(a);
+	public static int processBuff(String buff){
+		if(buff.indexOf("{dev:spirometer}") != -1){
+			return 1;
 		}
-		catch(Exception e){
-			System.out.println("Failed to write data. (" + e.toString() + ")");
+		else if(buff.indexOf("{data:") != -1){
+			return 2;
 		}
+		return 0;
 	}
 }
