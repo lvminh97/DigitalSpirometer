@@ -1,18 +1,20 @@
 package main;
 
-import java.util.ArrayList;
+import java.awt.GridBagLayout;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 public class View extends JFrame{
 	
+	private static final long serialVersionUID = 300939840640391342L;
+	
 	private JComboBox<String> portDropList;
 	private JButton scanPortBtn, connectBtn;
-	
-	private ArrayList<String> portList;
 	
 	public View() {
 		this.initUI();
@@ -28,7 +30,7 @@ public class View extends JFrame{
 		portLbl.setLocation(20, 20);
 		this.add(portLbl);
 		
-		this.portDropList = new JComboBox<>(new String[] {"COM1", "COM2"}) ;
+		this.portDropList = new JComboBox<>(new String[] {}) ;
 		this.portDropList.setSize(140, 22);
 		this.portDropList.setLocation(130, 20);
 		this.add(this.portDropList);
@@ -42,11 +44,44 @@ public class View extends JFrame{
 		this.scanPortBtn.setSize(150, 30);
 		this.scanPortBtn.setLocation(440, 16);
 		this.add(this.scanPortBtn);
-				
+		
+		JPanel resultPanel = new JPanel();
+		resultPanel.setBorder(BorderFactory.createTitledBorder("Kết quả"));
+		resultPanel.setLayout(new GridBagLayout());
+		resultPanel.setLocation(20, 80);
+		this.getContentPane().add(resultPanel);
+		
 		this.setLayout(null);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setVisible(true);
 		this.setResizable(false);
 	}
+
+	
+	// Getter and Setter
+	public JComboBox<String> getPortDropList() {
+		return portDropList;
+	}
+
+	public void setPortDropList(JComboBox<String> portDropList) {
+		this.portDropList = portDropList;
+	}
+
+	public JButton getScanPortBtn() {
+		return scanPortBtn;
+	}
+
+	public void setScanPortBtn(JButton scanPortBtn) {
+		this.scanPortBtn = scanPortBtn;
+	}
+
+	public JButton getConnectBtn() {
+		return connectBtn;
+	}
+
+	public void setConnectBtn(JButton connectBtn) {
+		this.connectBtn = connectBtn;
+	}
+	
 	
 }
