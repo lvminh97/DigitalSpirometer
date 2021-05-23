@@ -8,6 +8,8 @@ import gnu.io.CommPortIdentifier;
 
 public class Utils {
 	
+	private static float value;
+	
 	public static HashMap<String, CommPortIdentifier> scanPorts(){
 		Enumeration<?> ports = CommPortIdentifier.getPortIdentifiers();
 		HashMap<String, CommPortIdentifier> portMap = new HashMap<>();
@@ -21,10 +23,9 @@ public class Utils {
 	}
 	
 	public static void sendData(OutputStream out, String s) {
-		byte[] b = s.getBytes();
 		try{
-			out.flush();
-			out.write(b);
+			out.write(s.getBytes());
+//			out.flush();
 		}
 		catch(Exception e){
 			System.out.println("Failed to write data. (" + e.toString() + ")");
@@ -36,8 +37,19 @@ public class Utils {
 			return 1;
 		}
 		else if(buff.indexOf("{data:") != -1){
+			String dat = "";
+			int pos = buff.indexOf("{data:") + 6;
+			while(buff.charAt(pos) != '}'){
+				dat += buff.charAt(pos);
+				pos++;
+			}
+			Utils.value = Float.parseFloat(dat);
 			return 2;
 		}
 		return 0;
 	}
+
+	public static float getValue() {
+		return value;
+	}	
 }

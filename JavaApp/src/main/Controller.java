@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,8 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 	
 	private int TIMEOUT = 2000;
 	
+	private ArrayList<Float> data = null;
+	
 	public Controller() {
 		this.view = new View();
 		//
@@ -41,6 +44,8 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		for(Map.Entry<String, CommPortIdentifier> me: this.portList.entrySet()) {
 			this.view.getPortDropList().addItem(me.getKey());
 		}
+		//
+		data = new ArrayList<Float>();
 		//
 		this.view.getScanPortBtn().addActionListener(this);
 		this.view.getConnectBtn().addActionListener(this);
@@ -145,8 +150,12 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 						if(resp == 1){
 							this.isDetect = true;
 						}
-						else if(resp == 2 && this.isDetect){
-							System.out.println("Data: " + buff);
+						else if(resp == 2  && this.isDetect){
+							this.data.add(Utils.getValue());
+							if(this.data.size() > 1000) {
+								this.data.remove(0);
+							}
+							System.out.println("Len: " + this.data.size());
 						}
 						buff = "";
 					}
