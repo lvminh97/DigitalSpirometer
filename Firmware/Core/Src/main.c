@@ -66,8 +66,6 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
-
-/* USER CODE END PFP */
 void DWT_Init(void){
 	if(!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk)){
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
@@ -106,6 +104,7 @@ int32_t indexOf(char *s, char *t){
 	}
 	return -1;
 }
+/* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
@@ -165,9 +164,9 @@ int main(void)
 		
     /* USER CODE BEGIN 3 */
 		tmp = 0;
-		mpxv_volt = adc_raw[0] / 4095.0 * 3300; // convert adc value into voltage (range 3300mV)
-		pressure = fabs(mpxv_volt - 1747) / 1650 * 2000;  // conpute pressure between 2 pipe of sensor
-		if(pressure >= 100){  
+		mpxv_volt = (adc_raw[0] - 117) / 4095.0 * 3300; // convert adc value into voltage (range 3300mV)
+		pressure = (mpxv_volt - 1650) / 1650 * 2000;  // conpute pressure between 2 pipe of sensor
+		if(pressure >= 32.0){  
 			if(is_start == 0){
 				is_start = 1;
 				DWT->CYCCNT = 0;
@@ -176,6 +175,10 @@ int main(void)
 			tmp = 3.1415  * 0.019 * 0.019 / 4.0 * sqrt(2 * pressure / 1.2022); // compute the flow rate follow Bernouli equation
 			sum += tmp;
 			count++;
+		}
+		if(is_start == 1){
+			sprintf(TxData, "{data:%.4f}\n", tmp * 1000);
+			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 		}
 		if(get_millis() - timer >= 1000 && is_start == 1 && _1sec_complete == 0){
 			sprintf(tmpString, "%.1f lit  ", sum / count * 1000);
@@ -199,12 +202,11 @@ int main(void)
 			Rxcount = 0;
 			RxData[0] = 0;
 		}
-		else if(indexOf((char*) RxData, "{cmd:getdata}") != -1){
-			sprintf(TxData, "{data:%d}\n", (int) (tmp * 1000));
-			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
-			Rxcount = 0;
-			RxData[0] = 0;
-		}
+//		else if(indexOf((char*) RxData, "{cmd:getdata}") != -1){
+//			
+//			Rxcount = 0;
+//			RxData[0] = 0;
+//		}
 		HAL_Delay(5);
   }
   /* USER CODE END 3 */

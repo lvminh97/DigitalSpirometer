@@ -128,6 +128,8 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 static int8_t CDC_Init_FS(void);
 static int8_t CDC_DeInit_FS(void);
 static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
+
+/* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
 static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len){
 	datasize = *Len;
 	for(size_t i = 0; i < datasize; i++){
@@ -135,9 +137,6 @@ static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len){
 	}
 	return USBD_OK;
 }
-
-/* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
