@@ -71,7 +71,8 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		try{
 			commPort = this.selectedPortIdentifier.open("{cmd:detect}\n", TIMEOUT);
 			this.serialPort = (SerialPort) commPort;
-			this.serialPort.setSerialPortParams(115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+			this.serialPort.setSerialPortParams(4800, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+			this.serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 			this.isConnect = true;
 			this.view.getConnectBtn().setText("Ngắt kết nối");
 //			System.out.println(selectedPort + " opened successfully!!!");
