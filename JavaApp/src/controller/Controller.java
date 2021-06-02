@@ -1,5 +1,7 @@
-package main;
+package controller;
 
+import java.awt.Color;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -17,6 +19,9 @@ import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
+import view.GraphicPanel;
+import view.View;
+import utils.Utils;
 
 public class Controller implements ActionListener, EventListener, SerialPortEventListener{
 
@@ -49,6 +54,7 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		//
 		this.view.getScanPortBtn().addActionListener(this);
 		this.view.getConnectBtn().addActionListener(this);
+		this.view.getTestDrawBtn().addActionListener(this);
 	}
 
 	private boolean initIOStream(){
@@ -135,6 +141,15 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 			else{
 				this.disconnect();
 			}
+		}
+		else if(event.getSource() == this.view.getTestDrawBtn()) {
+			System.out.println("Test draw");
+//			this.view.getPanel().drawTest(10, 10, 100, 100, (Paint) Color.red);
+			GraphicPanel tmp = new GraphicPanel(null, false);
+			tmp.setSize(600, 400);
+			tmp.setLocation(20, 150);
+			this.view.setPanel(new GraphicPanel(null, false));
+			this.view.setPanel(tmp);
 		}
 		
 	}

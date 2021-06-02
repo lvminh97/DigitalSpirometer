@@ -1,5 +1,6 @@
-package main;
+package view;
 
+import java.awt.Color;
 import java.awt.GridBagLayout;
 
 import javax.swing.BorderFactory;
@@ -15,6 +16,8 @@ public class View extends JFrame{
 	
 	private JComboBox<String> portDropList;
 	private JButton scanPortBtn, connectBtn;
+	private JButton testDrawBtn;
+	private GraphicPanel panel;
 	
 	public View() {
 		this.initUI();
@@ -45,11 +48,22 @@ public class View extends JFrame{
 		this.scanPortBtn.setLocation(440, 16);
 		this.add(this.scanPortBtn);
 		
+		testDrawBtn = new JButton("Test draw");
+		testDrawBtn.setSize(180, 30);
+		testDrawBtn.setLocation(600, 16);
+		this.add(testDrawBtn);
+		
 		JPanel resultPanel = new JPanel();
 		resultPanel.setBorder(BorderFactory.createTitledBorder("Kết quả"));
 		resultPanel.setLayout(new GridBagLayout());
 		resultPanel.setLocation(20, 80);
-		this.getContentPane().add(resultPanel);
+		this.add(resultPanel);
+		
+		panel = new GraphicPanel(null, true);
+		panel.setSize(600, 400);
+		panel.setLocation(20, 150);
+		this.add(panel);
+//		panel.drawTest(10, 10, 100, 100, Color.red);
 		
 		this.setLayout(null);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -57,8 +71,6 @@ public class View extends JFrame{
 		this.setResizable(false);
 	}
 
-	
-	// Getter and Setter
 	public JComboBox<String> getPortDropList() {
 		return portDropList;
 	}
@@ -71,17 +83,20 @@ public class View extends JFrame{
 		return scanPortBtn;
 	}
 
-	public void setScanPortBtn(JButton scanPortBtn) {
-		this.scanPortBtn = scanPortBtn;
-	}
-
 	public JButton getConnectBtn() {
 		return connectBtn;
-	}
-
-	public void setConnectBtn(JButton connectBtn) {
-		this.connectBtn = connectBtn;
+	}	
+	
+	public JButton getTestDrawBtn() {
+		return testDrawBtn;
 	}
 	
+	public GraphicPanel getPanel() {
+		return panel;
+	}
 	
+	public void setPanel(GraphicPanel p) {
+		panel = p;
+//		this.add(panel);
+	}
 }
