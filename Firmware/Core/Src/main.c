@@ -184,9 +184,9 @@ int main(void)
 			mpxv_volt = (adc - 117) / 4095.0 * 3300; // convert adc value into voltage (range 3300mV)
 			pressure = Fabs(mpxv_volt - 1650) / 1650 * 2000;  // conpute pressure between 2 pipe of sensor
 			if(pressure >= 60.0){
-				LCD_Gotoxy(0, 0);
-				sprintf(tmpString, "%d %.0f %.1f    ", adc, mpxv_volt, pressure);
-				LCD_PutString(tmpString);
+//				LCD_Gotoxy(0, 0);
+//				sprintf(tmpString, "%d %.0f %.1f    ", adc, mpxv_volt, pressure);
+//				LCD_PutString(tmpString);
 				if(is_start == 0){
 					is_start = 1;
 					DWT->CYCCNT = 0;
@@ -196,9 +196,9 @@ int main(void)
 				sum += tmp;
 				count++;
 			}
-			LCD_Gotoxy(0, 1);
-			sprintf(tmpString, "%d %.0f %.1f    ", adc, mpxv_volt, pressure);
-			LCD_PutString(tmpString);
+//			LCD_Gotoxy(0, 1);
+//			sprintf(tmpString, "%d %.0f %.1f    ", adc, mpxv_volt, pressure);
+//			LCD_PutString(tmpString);
 		}
 		if(data_ready == 1 && is_start == 1){
 			sprintf(TxData, "{data:%.4f}\n", tmp * 1000);
@@ -206,16 +206,16 @@ int main(void)
 		}
 		if(get_millis() - timer >= 1000 && is_start == 1 && _1sec_complete == 0){
 			sprintf(tmpString, "%.1f lit  ", sum / count * 1000);
-//			LCD_Gotoxy(6, 0);
-//			LCD_PutString(tmpString);
+			LCD_Gotoxy(6, 0);
+			LCD_PutString(tmpString);
 			_1sec_complete = 1;
 		}
 		if(get_millis() - timer >= 6000 && is_start == 1){
 			sprintf(tmpString, "%.1f lit  ", sum / count * 1000);
 			sum = 0;
 			count = 0;
-//			LCD_Gotoxy(6, 1);
-//			LCD_PutString(tmpString);
+			LCD_Gotoxy(6, 1);
+			LCD_PutString(tmpString);
 			_1sec_complete = 0;
 			is_start = 0;
 			HAL_Delay(2000);
