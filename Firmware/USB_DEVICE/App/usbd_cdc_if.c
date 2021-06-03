@@ -128,15 +128,10 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 static int8_t CDC_Init_FS(void);
 static int8_t CDC_DeInit_FS(void);
 static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
+static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len){
-	datasize = *Len;
-	for(size_t i = 0; i < datasize; i++){
-		RxData[Rxcount++] = pbuf[i];
-	}
-	return USBD_OK;
-}
+
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -265,14 +260,18 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   * @param  Len: Number of data received (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len);
-//{
-//  /* USER CODE BEGIN 6 */
-//  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
-//  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-//  return (USBD_OK);
-//  /* USER CODE END 6 */
-//}
+static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
+{
+  /* USER CODE BEGIN 6 */
+  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
+  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+	datasize = *Len;
+	for(size_t i = 0; i < datasize; i++){
+		RxData[Rxcount++] = Buf[i];
+	}
+  return (USBD_OK);
+  /* USER CODE END 6 */
+}
 
 /**
   * @brief  CDC_Transmit_FS
