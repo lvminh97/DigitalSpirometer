@@ -163,7 +163,7 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 						if(json.isNull("dev") == false && json.getString("dev").equals("spirometer") == true){
 							this.isDetect = true;
 							this.view.getConnectStatusLabel().setText("Đã kết nối với thiết bị");
-							this.view.getConnectStatusLabel().setForeground(Color.green);
+							this.view.getConnectStatusLabel().setForeground(new Color(14, 162, 64));
 						}
 						if(this.isDetect == true && json.isNull("ts") == false && json.isNull("data") == false){
 							float timestamp = (float) (json.getInt("ts") / 1000.0);

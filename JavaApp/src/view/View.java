@@ -1,6 +1,8 @@
 package view;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Stroke;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -10,6 +12,9 @@ import javax.swing.JLabel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -73,6 +78,16 @@ public class View extends JFrame{
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(chartData);
 		JFreeChart chart = ChartFactory.createXYLineChart("Spirometer", "t(s)", "V(l)", dataset); 
+		XYPlot xyPlot = (XYPlot) chart.getXYPlot();
+		XYItemRenderer renderer = xyPlot.getRenderer();
+		renderer.setSeriesPaint(0, Color.red);
+		renderer.setSeriesStroke(0, new BasicStroke(3));
+		xyPlot.setDomainCrosshairVisible(true);
+		xyPlot.setRangeCrosshairVisible(true);
+		ValueAxis domainAxis = xyPlot.getDomainAxis();
+		ValueAxis rangeAxis = xyPlot.getRangeAxis();
+		domainAxis.setRange(0.0, 8.0);
+		rangeAxis.setRange(0.0, 12.0);
 		this.chartPanel = new ChartPanel(chart);
 		this.chartPanel.setSize(750, 500);
 		this.chartPanel.setLocation(20, 120);
