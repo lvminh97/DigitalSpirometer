@@ -1,15 +1,17 @@
 package controller;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TooManyListenersException;
+
+import org.json.JSONObject;
 
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
@@ -37,8 +39,6 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 	
 	private int TIMEOUT = 2000;
 	
-	private ArrayList<Float> data = null;
-	
 	private float cnt = 0;
 	
 	public Controller() {
@@ -48,8 +48,6 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		for(Map.Entry<String, CommPortIdentifier> me: this.portList.entrySet()) {
 			this.view.getPortDropList().addItem(me.getKey());
 		}
-		//
-		data = new ArrayList<Float>();
 		//
 		this.view.getScanPortBtn().addActionListener(this);
 		this.view.getConnectBtn().addActionListener(this);
@@ -74,12 +72,14 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		CommPort commPort = null;
 		
 		try{
-			commPort = this.selectedPortIdentifier.open("{cmd:detect}\n", TIMEOUT);
+			commPort = this.selectedPortIdentifier.open("Dev1", TIMEOUT);
 			this.serialPort = (SerialPort) commPort;
 			this.serialPort.setSerialPortParams(115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 			this.serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 			this.isConnect = true;
 			this.view.getConnectBtn().setText("Ngắt kết nối");
+			this.view.getConnectStatusLabel().setText("Đang tìm thiết bị...");
+			this.view.getConnectStatusLabel().setForeground(Color.blue);
 //			System.out.println(selectedPort + " opened successfully!!!");
 		}
 		catch(PortInUseException e){
@@ -104,6 +104,8 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 			this.view.getConnectBtn().setText("Kết nối");
 			this.isConnect = false;
 			this.isDetect = false;
+			this.view.getConnectStatusLabel().setText("Chưa kết nối");
+			this.view.getConnectStatusLabel().setForeground(Color.red);
 //			System.out.println("Disconnected!");
 		}
 		catch(Exception e){
@@ -157,13 +159,16 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 				String text = new String(new byte[] {data});
 				if(text.equals("\r") || text.equals("\n")){
 					if(buff.length() > 0){
-						int resp = Utils.processBuff(buff);
-						if(resp == 1){
+						JSONObject json = new JSONObject(buff);
+						if(json.isNull("dev") == false && json.getString("dev").equals("spirometer") == true){
 							this.isDetect = true;
+							this.view.getConnectStatusLabel().setText("Đã kết nối với thiết bị");
+							this.view.getConnectStatusLabel().setForeground(Color.green);
 						}
-						else if(resp == 2  && this.isDetect){
-							this.view.getChartData().add(Utils.getTimeStamp(), Utils.getValue());
-//							System.out.println("Len: " + this.view.getChartData().getItemCount());
+						if(this.isDetect == true && json.isNull("ts") == false && json.isNull("data") == false){
+							float timestamp = (float) (json.getInt("ts") / 1000.0);
+							float value = (float) json.getDouble("data");
+							this.view.getChartData().add(timestamp, value);
 						}
 						buff = "";
 					}

@@ -1,5 +1,7 @@
 package view;
 
+import java.awt.Color;
+
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -18,7 +20,7 @@ public class View extends JFrame{
 	private JComboBox<String> portDropList;
 	private JButton scanPortBtn, connectBtn;
 	private JButton testDrawBtn;
-	private JLabel fev1Label, fev6Label, fev16Label, commentLabel;
+	private JLabel connectStatusLabel, fev1Label, fev6Label, fev16Label, commentLabel;
 	
 	private ChartPanel chartPanel;
 	private XYSeries chartData;
@@ -57,18 +59,28 @@ public class View extends JFrame{
 		testDrawBtn.setLocation(600, 16);
 		this.add(testDrawBtn);
 		
+		JLabel label1 = new JLabel("Trạng thái: ");
+		label1.setSize(100, 20);
+		label1.setLocation(20, 65);
+		this.add(label1);
+		this.connectStatusLabel = new JLabel("Chưa kết nối");
+		this.connectStatusLabel.setForeground(Color.red);
+		this.connectStatusLabel.setSize(300, 20);
+		this.connectStatusLabel.setLocation(130, 65);
+		this.add(this.connectStatusLabel);
+		
 		this.chartData = new XYSeries("volumn");
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(chartData);
 		JFreeChart chart = ChartFactory.createXYLineChart("Spirometer", "t(s)", "V(l)", dataset); 
 		this.chartPanel = new ChartPanel(chart);
 		this.chartPanel.setSize(750, 500);
-		this.chartPanel.setLocation(20, 100);
+		this.chartPanel.setLocation(20, 120);
 		this.add(this.chartPanel);
 		
-		LegendPanel resultPanel = new LegendPanel("   Kết quả   ");
+		LegendPanel resultPanel = new LegendPanel(" Kết quả   ");
 		resultPanel.setSize(350, 500);
-		resultPanel.setLocation(800, 100);
+		resultPanel.setLocation(800, 120);
 		this.fev1Label = new JLabel("FEV1 = 0.00 lit");
 		this.fev1Label.setSize(150, 20);
 		this.fev1Label.setLocation(20, 50);
@@ -118,5 +130,9 @@ public class View extends JFrame{
 	
 	public XYSeries getChartData() {
 		return this.chartData;
+	}
+	
+	public JLabel getConnectStatusLabel() {
+		return this.connectStatusLabel;
 	}
 }
