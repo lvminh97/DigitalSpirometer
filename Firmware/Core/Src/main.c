@@ -25,7 +25,9 @@
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include "math.h"
+#include "dwt.h"
 #include "lcd1602.h"
+#include "mpxv7002.h"
 #include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
@@ -48,8 +50,8 @@ ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
 /* USER CODE BEGIN PV */
-uint16_t adc_raw[5], adc;
-float mpxv_volt, pressure, sum = 0, tmp;
+uint16_t adc_raw[5];
+float pressure, sum = 0, tmp;
 char tmpString[25];
 uint32_t timer = 0, count = 0;
 uint8_t is_start = 0, _1sec_complete = 0, _6sec_complete = 0;
@@ -66,47 +68,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
-void DWT_Init(void){
-	if(!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk)){
-		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-		DWT->CYCCNT = 0;
-		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-	}
-}
-void delay_us(uint32_t us){
-	uint32_t startTick = DWT->CYCCNT;
-	uint32_t delayTicks = us * (SystemCoreClock / 1000000);
-	while(DWT->CYCCNT - startTick < delayTicks);
-}
-void delay_ms(uint16_t ms){
-	while(ms--){
-		delay_us(1000);
-	}
-}
-uint32_t get_micros(){
-	return DWT->CYCCNT / (SystemCoreClock / 1000000);
-}
-uint32_t get_millis(){
-	return DWT->CYCCNT / (SystemCoreClock / 1000);
-}
-int32_t indexOf(char *s, char *t){
-	for(int i = 0; i < strlen(s); i++){
-		if(s[i] == t[0]){
-			uint8_t flag = 1;
-			for(int j = 1; j < strlen(t); j++){
-				if(s[i + j] != t[j]){
-					flag = 0;
-					break;
-				}
-			}
-			if(flag) return i;
-		}
-	}
-	return -1;
-}
-float Fabs(float f){
-	return f > 0.0 ? f : -f;
-}
+int32_t indexOf(char *s, char *t);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -147,8 +109,9 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_raw, 1);
-	DWT_Init();
+	dwt_init();
 	LCD_Init();
+	mpxv7002_init();
 	LCD_PutString("N.A. Tuan");
 	LCD_Gotoxy(0, 1);
 	LCD_PutString("Do an TN");
@@ -157,7 +120,7 @@ int main(void)
 	LCD_PutString("FEV1: ");
 	LCD_Gotoxy(0, 1);
 	LCD_PutString("FEV6: ");
-	timer = get_millis();
+	timer = dwt_get_millis();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -168,28 +131,26 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		tmp = 0;
-		adc = adc_raw[0];
-		mpxv_volt = (adc - 117) / 4095.0 * 3300; // convert adc value into voltage (range 3300mV)
-		pressure = Fabs(mpxv_volt - 1650) / 1650 * 2000;  // conpute pressure between 2 pipe of sensor
+		pressure = mpxv7002_get_pressure(adc_raw[0]);
 
-		if(pressure >= 20.0){
+		if(pressure >= 30.0){
 			if(is_start == 0){
 				is_start = 1;
-				DWT->CYCCNT = 0;
-				timer = get_millis();
+				dwt_clear();
+				timer = dwt_get_millis();
 			}
-			tmp = 3.1415  * 0.019 * 0.019 / 4.0 * sqrt(2 * pressure / 1.2022); // compute the flow rate follow Bernouli equation
+			tmp = mpxv7002_get_flowrate(pressure);
 			sum += tmp;
 			count++;
 		}
 
-		if(get_millis() - timer >= 1000 && is_start == 1 && _1sec_complete == 0){
+		if(dwt_get_millis() - timer >= 1000 && is_start == 1 && _1sec_complete == 0){
 			sprintf(tmpString, "%.1f lit  ", sum / count * 1000);
 			LCD_Gotoxy(6, 0);
 			LCD_PutString(tmpString);
 			_1sec_complete = 1;
 		}
-		if(get_millis() - timer >= 6000 && is_start == 1){
+		if(dwt_get_millis() - timer >= 6000 && is_start == 1){
 			sprintf(tmpString, "%.1f lit  ", sum / count * 1000);
 			sum = 0;
 			count = 0;
@@ -205,19 +166,13 @@ int main(void)
 			Rxcount = 0;
 			RxData[0] = 0;
 		}
-//		else if(indexOf((char*) RxData, "{cmd:getdata}") != -1){
-//			sprintf(TxData, "{\"ts\":%d,\"data\":%.4f}\n", get_millis() - timer, tmp * 1000);
-//			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
-//			Rxcount = 0;
-//			RxData[0] = 0;
-//		}
 		if(is_start == 1 && tmp > 0.0){
-			sprintf(TxData, "{\"ts\":%d,\"data\":%.4f}\n", get_millis() - timer, tmp * 1000);
+			sprintf(TxData, "{\"ts\":%d,\"data\":%.4f}\n", dwt_get_millis() - timer, tmp * 1000);
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			Rxcount = 0;
 			RxData[0] = 0;
 		}
-		HAL_Delay(10);
+		HAL_Delay(5);
   }
   /* USER CODE END 3 */
 }
@@ -372,7 +327,21 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+int32_t indexOf(char *s, char *t){
+	for(int i = 0; i < strlen(s); i++){
+		if(s[i] == t[0]){
+			uint8_t flag = 1;
+			for(int j = 1; j < strlen(t); j++){
+				if(s[i + j] != t[j]){
+					flag = 0;
+					break;
+				}
+			}
+			if(flag) return i;
+		}
+	}
+	return -1;
+}
 /* USER CODE END 4 */
 
 /**
