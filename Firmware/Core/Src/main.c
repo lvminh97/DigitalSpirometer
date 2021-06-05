@@ -53,8 +53,8 @@ DMA_HandleTypeDef hdma_adc1;
 uint16_t adc_raw[5];
 float pressure, sum = 0, tmp;
 char tmpString[25];
-uint32_t timer = 0, count = 0;
-uint8_t is_start = 0, _1sec_complete = 0, _6sec_complete = 0;
+uint32_t timer = 0, count = 0, timer_cnt = 0;
+uint8_t is_start = 0, is_reset = 0, _1sec_complete = 0, _6sec_complete = 0;
 
 char TxData[100], RxData[100] = {0};
 uint8_t Rxcount = 0;
@@ -136,22 +136,29 @@ int main(void)
 		if(pressure >= 30.0){
 			if(is_start == 0){
 				is_start = 1;
+				is_reset = 0;
 				dwt_clear();
+				timer_cnt = dwt_get_millis();
 				timer = dwt_get_millis();
 			}
+		}
+		if(is_start == 1){
 			tmp = mpxv7002_get_flowrate(pressure);
 			sum += tmp;
 			count++;
 		}
-
 		if(dwt_get_millis() - timer >= 1000 && is_start == 1 && _1sec_complete == 0){
-			sprintf(tmpString, "%.1f lit  ", sum / count * 1000);
+			sprintf(tmpString, "%.1f lit  ", sum / count * (dwt_get_millis() - timer));
 			LCD_Gotoxy(6, 0);
 			LCD_PutString(tmpString);
+			sprintf(TxData, "{\"fev1\":%.4f}\n", sum / count * (dwt_get_millis() - timer));
+			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			_1sec_complete = 1;
 		}
 		if(dwt_get_millis() - timer >= 6000 && is_start == 1){
-			sprintf(tmpString, "%.1f lit  ", sum / count * 1000);
+			sprintf(tmpString, "%.1f lit  ", sum / count * (dwt_get_millis() - timer));
+			sprintf(TxData, "{\"fev6\":%.4f}\n", sum / count * (dwt_get_millis() - timer));
+			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			sum = 0;
 			count = 0;
 			LCD_Gotoxy(6, 1);
@@ -160,19 +167,21 @@ int main(void)
 			is_start = 0;
 			HAL_Delay(2000);
 		}
+		if(dwt_get_millis() - timer_cnt >= 100 && is_start == 1){
+			if(is_reset == 0){
+				sprintf(TxData, "{\"ts\":%d,\"data\":%.4f,\"reset\":1}\n", dwt_get_millis() - timer, sum / count * (dwt_get_millis() - timer));
+				is_reset = 1;
+			}
+			else sprintf(TxData, "{\"ts\":%d,\"data\":%.4f}\n", dwt_get_millis() - timer, sum / count * (dwt_get_millis() - timer));
+			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
+			timer_cnt += 100;
+		}
 		// process the command received from app
 		if(indexOf((char *) RxData, "{cmd:detect}") != -1){
 			CDC_Transmit_FS((uint8_t*) "{\"dev\":\"spirometer\"}\n", 21);
 			Rxcount = 0;
 			RxData[0] = 0;
 		}
-		if(is_start == 1 && tmp > 0.0){
-			sprintf(TxData, "{\"ts\":%d,\"data\":%.4f}\n", dwt_get_millis() - timer, tmp * 1000);
-			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
-			Rxcount = 0;
-			RxData[0] = 0;
-		}
-		HAL_Delay(5);
   }
   /* USER CODE END 3 */
 }
