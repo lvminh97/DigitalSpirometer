@@ -74,7 +74,7 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		try{
 			commPort = this.selectedPortIdentifier.open("Dev1", TIMEOUT);
 			this.serialPort = (SerialPort) commPort;
-			this.serialPort.setSerialPortParams(115200, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+			this.serialPort.setSerialPortParams(921600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 			this.serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 			this.isConnect = true;
 			this.view.getConnectBtn().setText("Ngắt kết nối");
@@ -155,26 +155,31 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 	public void serialEvent(SerialPortEvent event) {
 		if(event.getEventType() == SerialPortEvent.DATA_AVAILABLE){
 			try{
-				byte data = (byte) inputStream.read();
-				String text = new String(new byte[] {data});
-				if(text.equals("\r") || text.equals("\n")){
-					if(buff.length() > 0){
-						JSONObject json = new JSONObject(buff);
-						if(json.isNull("dev") == false && json.getString("dev").equals("spirometer") == true){
-							this.isDetect = true;
-							this.view.getConnectStatusLabel().setText("Đã kết nối với thiết bị");
-							this.view.getConnectStatusLabel().setForeground(new Color(14, 162, 64));
+				while(inputStream.available() > 0){
+					byte data = (byte) inputStream.read();
+					String text = new String(new byte[] {data});
+					if(/*this.isDetect == false && */(text.equals("\r") || text.equals("\n"))){
+						if(buff.length() > 0){
+							JSONObject json = new JSONObject(buff);
+							if(json.isNull("dev") == false && json.getString("dev").equals("spirometer") == true){
+								this.isDetect = true;
+								this.view.getConnectStatusLabel().setText("Đã kết nối với thiết bị");
+								this.view.getConnectStatusLabel().setForeground(new Color(14, 162, 64));
+							}
+							if(this.isDetect == true && json.isNull("ts") == false && json.isNull("data") == false){
+								float timestamp = (float) (json.getInt("ts") / 1000.0);
+								float value = (float) json.getDouble("data");
+								this.view.getChartData().add(timestamp, value);
+							}
+							buff = "";
 						}
-						if(this.isDetect == true && json.isNull("ts") == false && json.isNull("data") == false){
-							float timestamp = (float) (json.getInt("ts") / 1000.0);
-							float value = (float) json.getDouble("data");
-							this.view.getChartData().add(timestamp, value);
-						}
-						buff = "";
 					}
-				}
-				else{
-					buff += text;
+					else{
+						buff += text;
+//						if(buff.length() % 100 == 0){
+//							System.out.println("" + buff.length());
+//						}
+					}
 				}
 			}
 			catch(Exception ex){
