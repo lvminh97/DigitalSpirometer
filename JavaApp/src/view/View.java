@@ -2,7 +2,6 @@ package view;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Stroke;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -81,7 +80,7 @@ public class View extends JFrame{
 		XYPlot xyPlot = (XYPlot) chart.getXYPlot();
 		XYItemRenderer renderer = xyPlot.getRenderer();
 		renderer.setSeriesPaint(0, Color.red);
-		renderer.setSeriesStroke(0, new BasicStroke(3));
+		renderer.setSeriesStroke(0, new BasicStroke(2));
 		xyPlot.setDomainCrosshairVisible(true);
 		xyPlot.setRangeCrosshairVisible(true);
 		ValueAxis domainAxis = xyPlot.getDomainAxis();
