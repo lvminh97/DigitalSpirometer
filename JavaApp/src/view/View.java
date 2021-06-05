@@ -5,6 +5,7 @@ import java.awt.Color;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
@@ -23,7 +24,8 @@ public class View extends JFrame{
 	
 	private JComboBox<String> portDropList;
 	private JButton scanPortBtn, connectBtn;
-	private JButton testDrawBtn;
+	private JComboBox<String> genderSelect;
+	private JEditorPane heightEdit, ageEdit;
 	private JLabel connectStatusLabel, fev1Label, fev6Label, fev16Label, commentLabel;
 	
 	private ChartPanel chartPanel;
@@ -58,11 +60,6 @@ public class View extends JFrame{
 		this.scanPortBtn.setLocation(440, 16);
 		this.add(this.scanPortBtn);
 		
-		testDrawBtn = new JButton("Test draw");
-		testDrawBtn.setSize(180, 30);
-		testDrawBtn.setLocation(600, 16);
-		this.add(testDrawBtn);
-		
 		JLabel label1 = new JLabel("Trạng thái: ");
 		label1.setSize(100, 20);
 		label1.setLocation(20, 65);
@@ -74,6 +71,7 @@ public class View extends JFrame{
 		this.add(this.connectStatusLabel);
 		
 		this.chartData = new XYSeries("volumn");
+		this.chartData.add(0, 0);
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(chartData);
 		JFreeChart chart = ChartFactory.createXYLineChart("Spirometer", "t(s)", "V(l)", dataset); 
@@ -92,9 +90,40 @@ public class View extends JFrame{
 		this.chartPanel.setLocation(20, 120);
 		this.add(this.chartPanel);
 		
+		LegendPanel inforPanel = new LegendPanel("Thông tin người dùng");
+		inforPanel.setSize(350, 190);
+		inforPanel.setLocation(800, 120);
+		JLabel label2 = new JLabel("Giới tính");
+		label2.setSize(100, 20);
+		label2.setLocation(20, 50);
+		inforPanel.add(label2);
+		this.genderSelect = new JComboBox<>(new String[] {"Nam", "Nữ"}) ;
+		this.genderSelect.setSize(140, 22);
+		this.genderSelect.setLocation(130, 50);
+		inforPanel.add(this.genderSelect);
+		JLabel label3 = new JLabel("Chiều cao (m)");
+		label3.setSize(100, 20);
+		label3.setLocation(20, 90);
+		inforPanel.add(label3);
+		this.heightEdit = new JEditorPane();
+		this.heightEdit.setText("0.00");
+		this.heightEdit.setSize(140, 22);
+		this.heightEdit.setLocation(130, 92);
+		inforPanel.add(this.heightEdit);
+		JLabel label4 = new JLabel("Tuổi");
+		label4.setSize(100, 20);
+		label4.setLocation(20, 130);
+		inforPanel.add(label4);
+		this.ageEdit = new JEditorPane();
+		this.ageEdit.setText("0");
+		this.ageEdit.setSize(140, 22);
+		this.ageEdit.setLocation(130, 132);
+		inforPanel.add(this.ageEdit);
+		this.add(inforPanel);
+		
 		LegendPanel resultPanel = new LegendPanel(" Kết quả   ");
-		resultPanel.setSize(350, 500);
-		resultPanel.setLocation(800, 120);
+		resultPanel.setSize(350, 300);
+		resultPanel.setLocation(800, 320);
 		this.fev1Label = new JLabel("FEV1 = 0.00 lit");
 		this.fev1Label.setSize(150, 20);
 		this.fev1Label.setLocation(20, 50);
@@ -138,15 +167,23 @@ public class View extends JFrame{
 		return connectBtn;
 	}	
 	
-	public JButton getTestDrawBtn() {
-		return testDrawBtn;
-	}
-	
 	public XYSeries getChartData() {
 		return this.chartData;
 	}
 	
 	public JLabel getConnectStatusLabel() {
 		return this.connectStatusLabel;
+	}
+	
+	public JLabel getFev1Label(){
+		return this.fev1Label;
+	}
+	
+	public JLabel getFev6Label(){
+		return this.fev6Label;
+	}
+	
+	public JLabel getFev16Label(){
+		return this.fev16Label;
 	}
 }

@@ -24,6 +24,9 @@ import utils.Utils;
 
 public class Controller implements ActionListener, EventListener, SerialPortEventListener{
 
+	private final int DATARATE = 921600;
+	private final int TIMEOUT = 2000;
+	
 	private View view = null;
 	
 	private HashMap<String, CommPortIdentifier> portList;  // map port's name with port instance
@@ -37,9 +40,7 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 	private boolean isConnect = false;
 	private boolean isDetect = false;
 	
-	private int TIMEOUT = 2000;
-	
-	private float cnt = 0;
+	private Double fev1, fev6;
 	
 	public Controller() {
 		this.view = new View();
@@ -51,7 +52,6 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		//
 		this.view.getScanPortBtn().addActionListener(this);
 		this.view.getConnectBtn().addActionListener(this);
-		this.view.getTestDrawBtn().addActionListener(this);
 	}
 
 	private boolean initIOStream(){
@@ -74,7 +74,7 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 		try{
 			commPort = this.selectedPortIdentifier.open("Dev1", TIMEOUT);
 			this.serialPort = (SerialPort) commPort;
-			this.serialPort.setSerialPortParams(921600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+			this.serialPort.setSerialPortParams(DATARATE, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 			this.serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 			this.isConnect = true;
 			this.view.getConnectBtn().setText("Ngắt kết nối");
@@ -143,12 +143,6 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 				this.disconnect();
 			}
 		}
-		else if(event.getSource() == this.view.getTestDrawBtn()) {
-			System.out.println("Test draw");
-			this.view.getChartData().add(cnt, Math.random());
-			this.cnt += 0.01;
-		}
-		
 	}
 
 	@Override
@@ -158,27 +152,42 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 				while(inputStream.available() > 0){
 					byte data = (byte) inputStream.read();
 					String text = new String(new byte[] {data});
-					if(/*this.isDetect == false && */(text.equals("\r") || text.equals("\n"))){
+					if(text.equals("\r") || text.equals("\n")){
 						if(buff.length() > 0){
 							JSONObject json = new JSONObject(buff);
+							// Detect spirometer
 							if(json.isNull("dev") == false && json.getString("dev").equals("spirometer") == true){
 								this.isDetect = true;
 								this.view.getConnectStatusLabel().setText("Đã kết nối với thiết bị");
 								this.view.getConnectStatusLabel().setForeground(new Color(14, 162, 64));
 							}
+							// Reset chart when receive first value of new measurement
+							if(this.isDetect == true && json.isNull("reset") == false && json.getInt("reset") == 1){
+								this.view.getChartData().clear();
+								this.view.getChartData().add(0, 0);
+							}
+							// Update chart when receive data from spirometer
 							if(this.isDetect == true && json.isNull("ts") == false && json.isNull("data") == false){
 								float timestamp = (float) (json.getInt("ts") / 1000.0);
 								float value = (float) json.getDouble("data");
 								this.view.getChartData().add(timestamp, value);
+							}
+							// Receive FEV1
+							if(this.isDetect == true && json.isNull("fev1") == false){
+								this.fev1 = json.getDouble("fev1");
+								this.view.getFev1Label().setText("FEV1 = " + this.fev1 + " lit");
+							}
+							// Receive FEV6
+							if(this.isDetect == true && json.isNull("fev6") == false){
+								this.fev6 = json.getDouble("fev6");
+								this.view.getFev6Label().setText("FEV6 = " + fev6 + " lit");
+								this.view.getFev16Label().setText("FEV1/FEV6 = " + (fev1 / fev6 * 100) + "%"); 
 							}
 							buff = "";
 						}
 					}
 					else{
 						buff += text;
-//						if(buff.length() % 100 == 0){
-//							System.out.println("" + buff.length());
-//						}
 					}
 				}
 			}
