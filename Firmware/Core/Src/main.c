@@ -51,7 +51,7 @@ DMA_HandleTypeDef hdma_adc1;
 
 /* USER CODE BEGIN PV */
 uint16_t adc_raw[5];
-float pressure, sum = 0, tmp;
+double pressure, sum = 0, tmp, fev1, fev6;
 char tmpString[25];
 uint32_t timer = 0, count = 0, timer_cnt = 0;
 uint8_t is_start = 0, is_reset = 0, _1sec_complete = 0, _6sec_complete = 0;
@@ -133,10 +133,14 @@ int main(void)
 		tmp = 0;
 		pressure = mpxv7002_get_pressure(adc_raw[0]);
 
-		if(pressure >= 30.0){
+		if(pressure > 2.0){
 			if(is_start == 0){
 				is_start = 1;
 				is_reset = 0;
+				LCD_Clear();
+				LCD_PutString("FEV1: ");
+				LCD_Gotoxy(0, 1);
+				LCD_PutString("FEV6: ");
 				dwt_clear();
 				timer_cnt = dwt_get_millis();
 				timer = dwt_get_millis();
@@ -148,16 +152,18 @@ int main(void)
 			count++;
 		}
 		if(dwt_get_millis() - timer >= 1000 && is_start == 1 && _1sec_complete == 0){
-			sprintf(tmpString, "%.1f lit  ", sum / count * (dwt_get_millis() - timer));
+			fev1 = sum / count * (dwt_get_millis() - timer);
+			sprintf(tmpString, "%.1lf lit  ", fev1);
 			LCD_Gotoxy(6, 0);
 			LCD_PutString(tmpString);
-			sprintf(TxData, "{\"fev1\":%.4f}\n", sum / count * (dwt_get_millis() - timer));
+			sprintf(TxData, "{\"fev1\":%.4lf}\n", fev1);
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			_1sec_complete = 1;
 		}
 		if(dwt_get_millis() - timer >= 6000 && is_start == 1){
-			sprintf(tmpString, "%.1f lit  ", sum / count * (dwt_get_millis() - timer));
-			sprintf(TxData, "{\"fev6\":%.4f}\n", sum / count * (dwt_get_millis() - timer));
+			fev6 =  sum / count * (dwt_get_millis() - timer);
+			sprintf(tmpString, "%.1lf lit  ", fev6);
+			sprintf(TxData, "{\"fev6\":%.4lf}\n", fev6);
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			sum = 0;
 			count = 0;
@@ -169,10 +175,10 @@ int main(void)
 		}
 		if(dwt_get_millis() - timer_cnt >= 100 && is_start == 1){
 			if(is_reset == 0){
-				sprintf(TxData, "{\"ts\":%d,\"data\":%.4f,\"reset\":1}\n", dwt_get_millis() - timer, sum / count * (dwt_get_millis() - timer));
+				sprintf(TxData, "{\"ts\":%d,\"data\":%.4lf,\"reset\":1}\n", dwt_get_millis() - timer, sum / count * (dwt_get_millis() - timer));
 				is_reset = 1;
 			}
-			else sprintf(TxData, "{\"ts\":%d,\"data\":%.4f}\n", dwt_get_millis() - timer, sum / count * (dwt_get_millis() - timer));
+			else sprintf(TxData, "{\"ts\":%d,\"data\":%.4lf}\n", dwt_get_millis() - timer, sum / count * (dwt_get_millis() - timer));
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			timer_cnt += 100;
 		}
@@ -182,6 +188,7 @@ int main(void)
 			Rxcount = 0;
 			RxData[0] = 0;
 		}
+		HAL_Delay(2);
   }
   /* USER CODE END 3 */
 }
