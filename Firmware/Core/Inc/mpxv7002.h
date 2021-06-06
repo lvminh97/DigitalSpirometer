@@ -5,8 +5,8 @@
 #include "math.h"
 
 #define A1 0.0277	// diameter of large tube, unit: m
-#define A2 0.019	// diameter of narrow tube, unit: m
-#define p	 2			// density of air - here is CO2, unit: kg/m3
+#define A2 0.0190	// diameter of narrow tube, unit: m
+#define p	 2.0		// density of air - here is CO2, unit: kg/m3
 
 float c1, c2;			// coefficients in formulus that compute flow rate
 
