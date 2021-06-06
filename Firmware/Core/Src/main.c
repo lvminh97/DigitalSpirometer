@@ -51,9 +51,9 @@ DMA_HandleTypeDef hdma_adc1;
 
 /* USER CODE BEGIN PV */
 uint16_t adc_raw[5];
-double pressure, sum = 0, vol = 0, tmp, fev1, fev6;
+double pressure, sum = 0, tmp, fev1, fev6;
 char tmpString[25];
-uint32_t timer = 0, count = 0, timer_cnt = 0, timer_base = 0;
+uint32_t timer = 0, timer_cnt = 0;
 uint8_t is_start = 0, is_reset = 0, _1sec_complete = 0, _6sec_complete = 0;
 
 char TxData[100], RxData[100] = {0};
@@ -134,9 +134,9 @@ int main(void)
 		pressure = mpxv7002_get_pressure(adc_raw[0]);
 		tmp = mpxv7002_get_flowrate(pressure);
 		if(tmp > 0.002 && is_start == 0){
+			sum = 0;
 			is_start = 1;
 			is_reset = 0;
-			count = 329; // number samples in 1st sec
 			fev1 = 0;
 			fev6 = 0;
 			LCD_Clear();
@@ -146,30 +146,24 @@ int main(void)
 			dwt_clear();
 			timer_cnt = dwt_get_millis();
 			timer = dwt_get_millis();
-			timer_base = 0;
 		}
 		if(is_start == 1){
-			sum += tmp;
+			sum += tmp * 3;
 		}
 		if(dwt_get_millis() - timer >= 1000 && is_start == 1 && _1sec_complete == 0){
-			fev1 = sum / count * (dwt_get_millis() - timer);
-			sum = 0;
+			fev1 = sum;
 			sprintf(tmpString, "%.1lf lit  ", fev1);
 			LCD_Gotoxy(6, 0);
 			LCD_PutString(tmpString);
 			sprintf(TxData, "{\"fev1\":%.4lf}\n", fev1);
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			_1sec_complete = 1;
-			count = 1974; // number samples in 6 secs
-			timer_base = dwt_get_millis() - timer;
 		}
 		if(dwt_get_millis() - timer >= 6000 && is_start == 1){
-			fev6 =  fev1 + sum / count * (dwt_get_millis() - timer - timer_base);
+			fev6 = sum;
 			sprintf(tmpString, "%.1lf lit  ", fev6);
 			sprintf(TxData, "{\"fev6\":%.4lf}\n", fev6);
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
-			sum = 0;
-//			count = 0;
 			LCD_Gotoxy(6, 1);
 			LCD_PutString(tmpString);
 			_1sec_complete = 0;
@@ -177,12 +171,11 @@ int main(void)
 			HAL_Delay(2000);
 		}
 		if(dwt_get_millis() - timer_cnt >= 100 && is_start == 1){
-			vol = fev1 + sum / count * (dwt_get_millis() - timer - timer_base);
 			if(is_reset == 0){
-				sprintf(TxData, "{\"ts\":%d,\"data\":%.4lf,\"reset\":1}\n", dwt_get_millis() - timer, vol);
+				sprintf(TxData, "{\"ts\":%d,\"data\":%.4lf,\"reset\":1}\n", dwt_get_millis() - timer, sum);
 				is_reset = 1;
 			}
-			else sprintf(TxData, "{\"ts\":%d,\"data\":%.4lf}\n", dwt_get_millis() - timer, vol);
+			else sprintf(TxData, "{\"ts\":%d,\"data\":%.4lf}\n", dwt_get_millis() - timer, sum);
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			timer_cnt += 100;
 		}
