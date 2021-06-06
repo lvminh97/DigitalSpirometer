@@ -53,7 +53,7 @@ DMA_HandleTypeDef hdma_adc1;
 uint16_t adc_raw[5];
 double pressure, sum = 0, vol = 0, tmp, fev1, fev6;
 char tmpString[25];
-uint32_t timer = 0, count = 0, timer_cnt = 0;
+uint32_t timer = 0, count = 0, timer_cnt = 0, timer_base = 0;
 uint8_t is_start = 0, is_reset = 0, _1sec_complete = 0, _6sec_complete = 0;
 
 char TxData[100], RxData[100] = {0};
@@ -146,10 +146,10 @@ int main(void)
 			dwt_clear();
 			timer_cnt = dwt_get_millis();
 			timer = dwt_get_millis();
+			timer_base = 0;
 		}
 		if(is_start == 1){
 			sum += tmp;
-//			count++;
 		}
 		if(dwt_get_millis() - timer >= 1000 && is_start == 1 && _1sec_complete == 0){
 			fev1 = sum / count * (dwt_get_millis() - timer);
@@ -161,9 +161,10 @@ int main(void)
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
 			_1sec_complete = 1;
 			count = 1974; // number samples in 6 secs
+			timer_base = dwt_get_millis() - timer;
 		}
 		if(dwt_get_millis() - timer >= 6000 && is_start == 1){
-			fev6 =  fev1 + sum / count * (dwt_get_millis() - timer);
+			fev6 =  fev1 + sum / count * (dwt_get_millis() - timer - timer_base);
 			sprintf(tmpString, "%.1lf lit  ", fev6);
 			sprintf(TxData, "{\"fev6\":%.4lf}\n", fev6);
 			CDC_Transmit_FS((uint8_t *) TxData, strlen(TxData));
@@ -176,7 +177,7 @@ int main(void)
 			HAL_Delay(2000);
 		}
 		if(dwt_get_millis() - timer_cnt >= 100 && is_start == 1){
-			vol = fev1 + sum / count * (dwt_get_millis() - timer);
+			vol = fev1 + sum / count * (dwt_get_millis() - timer - timer_base);
 			if(is_reset == 0){
 				sprintf(TxData, "{\"ts\":%d,\"data\":%.4lf,\"reset\":1}\n", dwt_get_millis() - timer, vol);
 				is_reset = 1;
