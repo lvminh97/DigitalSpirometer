@@ -49,4 +49,11 @@ public class Utils {
 		return res;
 	}
 	
+	public static String getDiagnose(float ratio) {
+		if(ratio > 0.8) return "Phổi của bạn khỏe mạnh";
+		else if(0.7 < ratio && ratio <= 0.8) return "Bạn có nguy cơ mắc hen suyễn";
+		else if(0.65 < ratio && ratio <= 0.7) return "Bạn có nguy cơ mắc viêm phế quản";
+		else if(0.3 < ratio && ratio <= 0.65) return "Bạn có nguy cơ mắc viêm phế quản mãn tính";
+		else return "Bạn có nguy cơ mắc ung thư phổi";
+	}
 }

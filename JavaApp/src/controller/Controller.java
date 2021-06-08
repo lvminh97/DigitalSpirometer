@@ -182,6 +182,7 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 								this.fev6 = json.getDouble("fev6");
 								this.view.getFev6Label().setText("FEV6 = " + fev6 + " lit");
 								this.view.getFev16Label().setText("FEV1/FEV6 = " + String.format("%.2f", fev1 / fev6 * 100) + "%"); 
+								this.view.getDiagnoseLabel().setText("Chẩn đoán: " + Utils.getDiagnose((float) (fev1 / fev6)));
 								// compute by ideal formulus
 								HashMap<?,?> idealValue = Utils.computeFVC(this.view.getGenderSelect().getSelectedIndex(), 
 										Float.parseFloat(this.view.getHeightEdit().getText()), 

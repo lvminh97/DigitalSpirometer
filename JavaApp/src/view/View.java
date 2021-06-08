@@ -27,7 +27,7 @@ public class View extends JFrame{
 	private JButton scanPortBtn, connectBtn;
 	private JComboBox<String> genderSelect;
 	private JEditorPane heightEdit, ageEdit;
-	private JLabel connectStatusLabel, fev1Label, fev6Label, fev16Label, fev1sLabel, fev6sLabel, fev16sLabel, commentLabel;
+	private JLabel connectStatusLabel, fev1Label, fev6Label, fev16Label, fev1sLabel, fev6sLabel, fev16sLabel, diagnoseLabel;
 	
 	private ChartPanel chartPanel;
 	private XYSeries chartData;
@@ -162,13 +162,13 @@ public class View extends JFrame{
 		this.fev16sLabel.setSize(150, 20);
 		this.fev16sLabel.setLocation(200, 150);
 		resultPanel.add(this.fev16sLabel);
-		this.commentLabel = new JLabel("Đánh giá: ...");
-		this.commentLabel.setAlignmentY(TOP_ALIGNMENT);
-		this.commentLabel.setVerticalAlignment(JLabel.TOP);
-		this.commentLabel.setVerticalTextPosition(JLabel.TOP);
-		this.commentLabel.setSize(250, 100);
-		this.commentLabel.setLocation(20, 200);
-		resultPanel.add(this.commentLabel);
+		this.diagnoseLabel = new JLabel("Chẩn đoán: ...");
+		this.diagnoseLabel.setAlignmentY(TOP_ALIGNMENT);
+		this.diagnoseLabel.setVerticalAlignment(JLabel.TOP);
+		this.diagnoseLabel.setVerticalTextPosition(JLabel.TOP);
+		this.diagnoseLabel.setSize(250, 100);
+		this.diagnoseLabel.setLocation(20, 200);
+		resultPanel.add(this.diagnoseLabel);
 		this.add(resultPanel);
 		
 		this.setLayout(null);
@@ -211,6 +211,10 @@ public class View extends JFrame{
 	
 	public JLabel getFev16Label(){
 		return this.fev16Label;
+	}
+	
+	public JLabel getDiagnoseLabel() {
+		return this.diagnoseLabel;
 	}
 	
 	public JLabel getFev1sLabel(){
