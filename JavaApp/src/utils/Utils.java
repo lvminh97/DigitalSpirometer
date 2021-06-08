@@ -33,15 +33,21 @@ public class Utils {
 	public static HashMap<String, Float> computeFVC(int gender, float height, int age){
 		HashMap<String, Float> res = new HashMap<>();
 		float fev1, fev6, ratio;
-		if(gender == 0) { // male
-			fev1 = (float) (4.3 * height - 0.029 * age - 2.49);
-			fev6 = (float) (5.76 * height - 0.026 * age - 4.34);
-			ratio = fev1 / fev6;
-		}
-		else { // female
-			fev1 = (float) (3.95 * height - 0.025 * age - 2.6);
-			fev6 = (float) (4.43 * height - 0.026 * age - 2.89);
-			ratio = fev1 / fev6;
+		if(height <= 0.0 || age <= 0) {
+			fev1 = 0;
+			fev6 = 0;
+			ratio = 0;
+		}else {
+			if(gender == 0) { // male
+				fev1 = (float) (4.3 * height - 0.029 * age - 2.49);
+				fev6 = (float) (5.76 * height - 0.026 * age - 4.34);
+				ratio = fev1 / fev6;
+			}
+			else { // female
+				fev1 = (float) (3.95 * height - 0.025 * age - 2.6);
+				fev6 = (float) (4.43 * height - 0.026 * age - 2.89);
+				ratio = fev1 / fev6;
+			}
 		}
 		res.put("fev1", fev1);
 		res.put("fev6", fev6);

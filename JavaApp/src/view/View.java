@@ -166,7 +166,7 @@ public class View extends JFrame{
 		this.diagnoseLabel.setAlignmentY(TOP_ALIGNMENT);
 		this.diagnoseLabel.setVerticalAlignment(JLabel.TOP);
 		this.diagnoseLabel.setVerticalTextPosition(JLabel.TOP);
-		this.diagnoseLabel.setSize(250, 100);
+		this.diagnoseLabel.setSize(330, 100);
 		this.diagnoseLabel.setLocation(20, 200);
 		resultPanel.add(this.diagnoseLabel);
 		this.add(resultPanel);

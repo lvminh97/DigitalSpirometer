@@ -165,6 +165,13 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 							if(this.isDetect == true && json.isNull("reset") == false && json.getInt("reset") == 1){
 								this.view.getChartData().clear();
 								this.view.getChartData().add(0, 0);
+								this.view.getFev1Label().setText("FEV1 = 0.00 lit");
+								this.view.getFev6Label().setText("FEV6 = 0.00 lit");
+								this.view.getFev16Label().setText("FEV1/FEV6 = ");
+								this.view.getFev1sLabel().setText("FEV1 = 0.00 lit");
+								this.view.getFev6sLabel().setText("FEV6 = 0.00 lit");
+								this.view.getFev16sLabel().setText("FEV1/FEV6 = ");
+								this.view.getDiagnoseLabel().setText("Đánh giá: ...");
 							}
 							// Update chart when receive data from spirometer
 							if(this.isDetect == true && json.isNull("ts") == false && json.isNull("data") == false){
@@ -175,20 +182,20 @@ public class Controller implements ActionListener, EventListener, SerialPortEven
 							// Receive FEV1
 							if(this.isDetect == true && json.isNull("fev1") == false){
 								this.fev1 = json.getDouble("fev1");
-								this.view.getFev1Label().setText("FEV1 = " + this.fev1 + " lit");
+								this.view.getFev1Label().setText("FEV1 = " + String.format("%.2f", this.fev1) + " lit");
 							}
 							// Receive FEV6
 							if(this.isDetect == true && json.isNull("fev6") == false){
 								this.fev6 = json.getDouble("fev6");
-								this.view.getFev6Label().setText("FEV6 = " + fev6 + " lit");
+								this.view.getFev6Label().setText("FEV6 = " + String.format("%.2f", this.fev6) + " lit");
 								this.view.getFev16Label().setText("FEV1/FEV6 = " + String.format("%.2f", fev1 / fev6 * 100) + "%"); 
 								this.view.getDiagnoseLabel().setText("Chẩn đoán: " + Utils.getDiagnose((float) (fev1 / fev6)));
 								// compute by ideal formulus
 								HashMap<?,?> idealValue = Utils.computeFVC(this.view.getGenderSelect().getSelectedIndex(), 
 										Float.parseFloat(this.view.getHeightEdit().getText()), 
 										Integer.parseInt(this.view.getAgeEdit().getText()));
-								this.view.getFev1sLabel().setText("FEV1 = " + idealValue.get("fev1") + " lit");
-								this.view.getFev6sLabel().setText("FEV6 = " + idealValue.get("fev6") + " lit");
+								this.view.getFev1sLabel().setText("FEV1 = " + String.format("%.2f", idealValue.get("fev1")) + " lit");
+								this.view.getFev6sLabel().setText("FEV6 = " + String.format("%.2f", idealValue.get("fev6")) + " lit");
 								this.view.getFev16sLabel().setText("FEV1/FEV6 = " + String.format("%.2f", 100 * (float) idealValue.get("ratio")) + "%");
 							}
 							buff = "";
