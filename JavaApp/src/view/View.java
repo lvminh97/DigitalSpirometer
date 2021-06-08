@@ -2,6 +2,7 @@ package view;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -26,7 +27,7 @@ public class View extends JFrame{
 	private JButton scanPortBtn, connectBtn;
 	private JComboBox<String> genderSelect;
 	private JEditorPane heightEdit, ageEdit;
-	private JLabel connectStatusLabel, fev1Label, fev6Label, fev16Label, commentLabel;
+	private JLabel connectStatusLabel, fev1Label, fev6Label, fev16Label, fev1sLabel, fev6sLabel, fev16sLabel, commentLabel;
 	
 	private ChartPanel chartPanel;
 	private XYSeries chartData;
@@ -121,21 +122,46 @@ public class View extends JFrame{
 		inforPanel.add(this.ageEdit);
 		this.add(inforPanel);
 		
+		Font myFont = new Font("myFont", Font.BOLD, 13);
 		LegendPanel resultPanel = new LegendPanel(" Kết quả   ");
 		resultPanel.setSize(350, 300);
 		resultPanel.setLocation(800, 320);
+		JLabel label5 = new JLabel("Thực tế");
+		label5.setFont(myFont);
+		label5.setForeground(new Color(16, 161, 0));
+		label5.setSize(150, 20);
+		label5.setLocation(20, 40);
+		resultPanel.add(label5);
 		this.fev1Label = new JLabel("FEV1 = 0.00 lit");
 		this.fev1Label.setSize(150, 20);
-		this.fev1Label.setLocation(20, 50);
+		this.fev1Label.setLocation(20, 80);
 		resultPanel.add(this.fev1Label);
 		this.fev6Label = new JLabel("FEV6 = 0.00 lit");
 		this.fev6Label.setSize(150, 20);
-		this.fev6Label.setLocation(20, 100);
+		this.fev6Label.setLocation(20, 115);
 		resultPanel.add(this.fev6Label);
 		this.fev16Label = new JLabel("FEV1/FEV6 = 0.00");
 		this.fev16Label.setSize(150, 20);
 		this.fev16Label.setLocation(20, 150);
 		resultPanel.add(this.fev16Label);
+		JLabel label6 = new JLabel("Tính toán");
+		label6.setFont(myFont);
+		label6.setForeground(new Color(14, 22, 129));
+		label6.setSize(150, 20);
+		label6.setLocation(200, 40);
+		resultPanel.add(label6);
+		this.fev1sLabel = new JLabel("FEV1 = 0.00 lit");
+		this.fev1sLabel.setSize(150, 20);
+		this.fev1sLabel.setLocation(200, 80);
+		resultPanel.add(this.fev1sLabel);
+		this.fev6sLabel = new JLabel("FEV6 = 0.00 lit");
+		this.fev6sLabel.setSize(150, 20);
+		this.fev6sLabel.setLocation(200, 115);
+		resultPanel.add(this.fev6sLabel);
+		this.fev16sLabel = new JLabel("FEV1/FEV6 = 0.00");
+		this.fev16sLabel.setSize(150, 20);
+		this.fev16sLabel.setLocation(200, 150);
+		resultPanel.add(this.fev16sLabel);
 		this.commentLabel = new JLabel("Đánh giá: ...");
 		this.commentLabel.setAlignmentY(TOP_ALIGNMENT);
 		this.commentLabel.setVerticalAlignment(JLabel.TOP);
@@ -185,5 +211,29 @@ public class View extends JFrame{
 	
 	public JLabel getFev16Label(){
 		return this.fev16Label;
+	}
+	
+	public JLabel getFev1sLabel(){
+		return this.fev1sLabel;
+	}
+	
+	public JLabel getFev6sLabel(){
+		return this.fev6sLabel;
+	}
+	
+	public JLabel getFev16sLabel(){
+		return this.fev16sLabel;
+	}
+	
+	public JComboBox<String> getGenderSelect(){
+		return this.portDropList;
+	}
+	
+	public JEditorPane getHeightEdit() {
+		return this.heightEdit;
+	}
+	
+	public JEditorPane getAgeEdit() {
+		return this.ageEdit;
 	}
 }
